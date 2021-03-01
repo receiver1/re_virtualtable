@@ -9,13 +9,13 @@ clVirtualTable<HRESULT, LPDIRECT3DDEVICE9, D3DPRESENT_PARAMETERS*> resetHook;
 HRESULT __stdcall endSceneHooked(LPDIRECT3DDEVICE9 pDevice)
 {
     // Some actions...
-    return endSceneHook.call(pDevice);
+    return endSceneHook.call(eConvention::stdcall, pDevice);
 }
 
 HRESULT __stdcall resetHooked(LPDIRECT3DDEVICE9 pDevice, D3DPRESENT_PARAMETERS* pParams)
 {
     // Some actions...
-    return resetHook.call(pDevice, pParams); 
+    return resetHook.call(eConvention::stdcall, pDevice, pParams); 
 }
 
 // Entry point
