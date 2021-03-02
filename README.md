@@ -19,7 +19,7 @@ HRESULT __stdcall resetHooked(LPDIRECT3DDEVICE9 pDevice, D3DPRESENT_PARAMETERS* 
 }
 
 // Entry point
-const UINT hookAddress{ 0xC97C28U };
+const UINT hookAddress{ 0xC97C28U }; // GTA:SA device
 endSceneHook.install(hookAddress, 42, &endSceneHooked)
 resetHook.install(hookAddress, 16, &resetHooked);
 ```
