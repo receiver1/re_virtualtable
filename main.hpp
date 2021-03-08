@@ -48,7 +48,7 @@ public:
 		originalFunction = virtualTable[index];
 		virtualTable[index] = function;
 
-		if (VirtualProtect(reinterpret_cast<LPVOID>
+		if (!VirtualProtect(reinterpret_cast<LPVOID>
 			(virtualTable + index), 4, dwProtection, &dwProtection))
 			return eResult::failedProtection;
 
@@ -57,17 +57,19 @@ public:
 
 	Type call(eConvention callingConvention, Args... functionArguments)
 	{
+		auto result{};
 		switch (callingConvention)
 		{
-			case eConvention::cdeclcall: return reinterpret_cast
-				<Type(__cdecl*)(Args...)>(originalFunction)(functionArguments...);
-			case eConvention::stdcall: return reinterpret_cast
-				<Type(__stdcall*)(Args...)>(originalFunction)(functionArguments...);
-			case eConvention::thiscall: return reinterpret_cast
-				<Type(__thiscall*)(Args...)>(originalFunction)(functionArguments...);
-			case eConvention::fastcall: return reinterpret_cast
-				<Type(__fastcall*)(Args...)>(originalFunction)(functionArguments...);
+		case eConvention::cdeclcall: 
+			result = reinterpret_cast<Type(__cdecl*)(Args...)>(originalFunction)(functionArguments...);
+		case eConvention::stdcall: 
+			result = reinterpret_cast<Type(__stdcall*)(Args...)>(originalFunction)(functionArguments...);
+		case eConvention::thiscall: 
+			result = reinterpret_cast<Type(__thiscall*)(Args...)>(originalFunction)(functionArguments...);
+		case eConvention::fastcall: 
+			result = reinterpret_cast<Type(__fastcall*)(Args...)>(originalFunction)(functionArguments...);
 		}
+		return result;
 	}
 
 	eResult remove()
@@ -76,13 +78,13 @@ public:
 			originalFunction != nullptr)
 		{
 			DWORD dwProtection;
-			if (VirtualProtect(reinterpret_cast<LPVOID>
+			if (!VirtualProtect(reinterpret_cast<LPVOID>
 				(virtualTable + hookIndex), 4, PAGE_READWRITE, &dwProtection))
 				return eResult::failedProtection;
 
 			virtualTable[hookIndex] = originalFunction;
 
-			if (VirtualProtect(reinterpret_cast<LPVOID>
+			if (!VirtualProtect(reinterpret_cast<LPVOID>
 				(virtualTable + hookIndex), 4, dwProtection, &dwProtection))
 				return eResult::failedProtection;
 
