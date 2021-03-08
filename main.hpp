@@ -57,15 +57,15 @@ public:
 
 	Type call(eConvention callingConvention, Args... functionArguments)
 	{
-		auto result{};
+		auto result{ reinterpret_cast<Type(__cdecl*)(Args...)>(originalFunction)(functionArguments...) };
 		switch (callingConvention)
 		{
-		case eConvention::cdeclcall: 
-			result = reinterpret_cast<Type(__cdecl*)(Args...)>(originalFunction)(functionArguments...);
 		case eConvention::stdcall: 
 			result = reinterpret_cast<Type(__stdcall*)(Args...)>(originalFunction)(functionArguments...);
+			break;
 		case eConvention::thiscall: 
 			result = reinterpret_cast<Type(__thiscall*)(Args...)>(originalFunction)(functionArguments...);
+			break;
 		case eConvention::fastcall: 
 			result = reinterpret_cast<Type(__fastcall*)(Args...)>(originalFunction)(functionArguments...);
 		}
