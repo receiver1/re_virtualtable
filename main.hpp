@@ -36,23 +36,32 @@ public:
 	eResult install(const LPVOID instance, const UINT index, const LPVOID function)
 	{
 		hookIndex = index;
+		
+		// This is a check of the availability of the region
+		// This is so important, because your program will crash
+		// if the region is unavailable and you will try to write or read its.
+		::MEMORY_BASIC_INFORMATION mbi;
+		::VirtualQuery(instance, &mbi, sizeof(mbi));
 
-		virtualTable = *reinterpret_cast<LPVOID**>(instance);
-		if (!virtualTable) return eResult::failedGetVT;
+		if (mbi.State == MEM_COMMIT && (mbi.Protect & PAGE_EXECUTE_FLAGS))
+		{
+			virtualTable = *reinterpret_cast<LPVOID**>(instance);
+			if (!virtualTable) return eResult::failedGetVT;
 
-		DWORD dwProtection;
-		if (!VirtualProtect(reinterpret_cast<LPVOID>
-			(virtualTable + index), 4, PAGE_READWRITE, &dwProtection))
-			return eResult::failedProtection;
+			DWORD dwProtection;
+			if (!VirtualProtect(reinterpret_cast<LPVOID>
+				(virtualTable + index), 4, PAGE_READWRITE, &dwProtection))
+				return eResult::failedProtection;
 
-		originalFunction = virtualTable[index];
-		virtualTable[index] = function;
+			originalFunction = virtualTable[index];
+			virtualTable[index] = function;
 
-		if (!VirtualProtect(reinterpret_cast<LPVOID>
-			(virtualTable + index), 4, dwProtection, &dwProtection))
-			return eResult::failedProtection;
+			if (!VirtualProtect(reinterpret_cast<LPVOID>
+				(virtualTable + index), 4, dwProtection, &dwProtection))
+				return eResult::failedProtection;
 
-		return eResult::successHooked;
+			return eResult::successHooked;
+		}
 	}
 
 	Type call(eConvention callingConvention, Args... functionArguments)
