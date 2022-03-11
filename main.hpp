@@ -43,7 +43,7 @@ public:
 		::MEMORY_BASIC_INFORMATION mbi;
 		::VirtualQuery(instance, &mbi, sizeof(mbi));
 
-		if (mbi.State == MEM_COMMIT && (mbi.Protect & PAGE_EXECUTE_FLAGS))
+		if (mbi.State == MEM_COMMIT && (mbi.Protect & (PAGE_EXECUTE | PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY)))
 		{
 			virtualTable = *reinterpret_cast<LPVOID**>(instance);
 			if (!virtualTable) return eResult::failedGetVT;
